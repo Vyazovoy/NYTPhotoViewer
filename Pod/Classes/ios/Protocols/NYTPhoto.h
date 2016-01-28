@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) NSData *imageData;
 
 /**
+ * The video URL to play.
+ */
+@property (nonatomic, readonly, nullable) NSURL *videoURL;
+
+/**
  *  A placeholder image for display while the image is loading.
  */
 @property (nonatomic, readonly, nullable) UIImage *placeholderImage;

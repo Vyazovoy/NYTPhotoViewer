@@ -9,10 +9,14 @@
 #import "NYTPhotoViewController.h"
 #import "NYTPhoto.h"
 #import "NYTScalingImageView.h"
+#import "NSBundle+NYTPhotoViewer.h"
 
 #ifdef ANIMATED_GIF_SUPPORT
 #import <FLAnimatedImage/FLAnimatedImage.h>
 #endif
+
+@import AVKit;
+@import AVFoundation;
 
 NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhotoViewControllerPhotoImageUpdatedNotification";
 
@@ -24,6 +28,7 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
 
 @property (nonatomic) NYTScalingImageView *scalingImageView;
 @property (nonatomic) UIView *loadingView;
+@property (strong, nonatomic) UIButton *playButton;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic) UITapGestureRecognizer *doubleTapGestureRecognizer;
 @property (nonatomic) UILongPressGestureRecognizer *longPressGestureRecognizer;
@@ -67,6 +72,11 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
     [self.view addSubview:self.loadingView];
     [self.loadingView sizeToFit];
     
+    if (self.photo.videoURL && (self.photo.image || self.photo.imageData)) {
+        [self.view addSubview:self.playButton];
+        [self.playButton sizeToFit];
+    }
+    
     [self.view addGestureRecognizer:self.doubleTapGestureRecognizer];
     [self.view addGestureRecognizer:self.longPressGestureRecognizer];
 }
@@ -78,6 +88,8 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
     
     [self.loadingView sizeToFit];
     self.loadingView.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
+    [self.playButton sizeToFit];
+    self.playButton.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
 }
 
 #pragma mark - NYTPhotoViewController
@@ -108,7 +120,11 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
     }
     
     _scalingImageView.delegate = self;
-
+    
+    _playButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_playButton setImage:[UIImage imageNamed:@"NYTPhotoViewerPlayButton" inBundle:[NSBundle nyt_photoViewerResourceBundle] compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+    [_playButton addTarget:self action:@selector(playButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    
     _notificationCenter = notificationCenter;
 
     [self setupGestureRecognizers];
@@ -141,7 +157,26 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
     if (imageData || image) {
         [self.loadingView removeFromSuperview];
         self.loadingView = nil;
+        
+        if (self.photo.videoURL && !self.playButton.superview) {
+            [self.view addSubview:self.playButton];
+            [self.playButton sizeToFit];
+        } else if (!self.photo.videoURL && self.playButton.superview) {
+            [self.playButton removeFromSuperview];
+        }
     }
+}
+
+#pragma mark - Action Methods
+
+- (void)playButtonTapped:(UIButton *)button {
+    AVPlayer *player = [AVPlayer playerWithURL:self.photo.videoURL];
+    AVPlayerViewController *playerViewController = [[AVPlayerViewController alloc] init];
+    playerViewController.player = player;
+    
+    [self presentViewController:playerViewController animated:YES completion:^{
+        [player play];
+    }];
 }
 
 #pragma mark - Gesture Recognizers
