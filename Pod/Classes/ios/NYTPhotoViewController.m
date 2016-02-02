@@ -170,12 +170,19 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
 #pragma mark - Action Methods
 
 - (void)playButtonTapped:(UIButton *)button {
+    if (self.presentedViewController) return;
     AVPlayer *player = [AVPlayer playerWithURL:self.photo.videoURL];
     AVPlayerViewController *playerViewController = [[AVPlayerViewController alloc] init];
     playerViewController.player = player;
     
     [self presentViewController:playerViewController animated:YES completion:^{
-        [player play];
+        if (player.status == AVPlayerStatusReadyToPlay) {
+            [player play];
+        } else if (player.status == AVPlayerStatusFailed) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
+            });
+        }
     }];
 }
 
