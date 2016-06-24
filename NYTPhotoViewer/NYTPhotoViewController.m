@@ -72,7 +72,7 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
     [self.view addSubview:self.loadingView];
     [self.loadingView sizeToFit];
     
-    if (self.photo.videoURL && (self.photo.image || self.photo.imageData)) {
+    if (self.photo.videoAsset && (self.photo.image || self.photo.imageData)) {
         [self.view addSubview:self.playButton];
         [self.playButton sizeToFit];
     }
@@ -158,10 +158,10 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
         [self.loadingView removeFromSuperview];
         self.loadingView = nil;
         
-        if (self.photo.videoURL && !self.playButton.superview) {
+        if (self.photo.videoAsset && !self.playButton.superview) {
             [self.view addSubview:self.playButton];
             [self.playButton sizeToFit];
-        } else if (!self.photo.videoURL && self.playButton.superview) {
+        } else if (!self.photo.videoAsset && self.playButton.superview) {
             [self.playButton removeFromSuperview];
         }
     } else {
@@ -173,7 +173,8 @@ NSString * const NYTPhotoViewControllerPhotoImageUpdatedNotification = @"NYTPhot
 
 - (void)playButtonTapped:(UIButton *)button {
     if (self.presentedViewController) return;
-    AVPlayer *player = [AVPlayer playerWithURL:self.photo.videoURL];
+    AVPlayerItem *playerItem = [AVPlayerItem playerItemWithAsset:self.photo.videoAsset];
+    AVPlayer *player = [AVPlayer playerWithPlayerItem:playerItem];
     AVPlayerViewController *playerViewController = [[AVPlayerViewController alloc] init];
     playerViewController.player = player;
     

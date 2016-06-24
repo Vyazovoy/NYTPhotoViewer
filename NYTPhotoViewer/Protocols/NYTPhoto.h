@@ -7,6 +7,7 @@
 //
 
 @import UIKit;
+@import AVFoundation;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The video URL to play.
  */
-@property (nonatomic, readonly, nullable) NSURL *videoURL;
+@property (nonatomic, readonly, nullable) AVURLAsset *videoAsset;
 
 /**
  *  A placeholder image for display while the image is loading.
